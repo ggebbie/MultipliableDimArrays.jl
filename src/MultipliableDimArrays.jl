@@ -3,10 +3,13 @@ module MultipliableDimArrays
 using DimensionalData
 using LinearAlgebra
 
-export algebraic_object
 export MultipliableDimArray
 export matrix_to_dimarray
-    
+export DiagonalDimArray
+
+# an alias
+#MultiDimArray{T} = DimArray{T} where T <: AbstractDimArray
+
 # vec works just as well (maybe an issue when units appear)
 # """
 # function algebraic_object(P::DimArray{Number})
@@ -21,9 +24,9 @@ export matrix_to_dimarray
 # end
 
 """
-function algebraic_object(P::DimArray{T}) where T <: AbstractDimArray
+function Matrix(P::DimArray{T}) where T <: AbstractDimArray
 """
-function algebraic_object(P::DimArray{T}) where T <: AbstractDimArray
+function Matrix(P::DimArray{T}) where T <: AbstractDimArray
     # number of columns/ outer dims
     N = length(P)
     # number of rows, take first inner element as example
@@ -42,9 +45,9 @@ function algebraic_object(P::DimArray{T}) where T <: AbstractDimArray
 end
 
 """
-function matrix_to_dimarray(A,rangedims,domaindims)
+function MultipliableDimArray(A::AbstractMatrix,rangedims,domaindims)
 """
-function matrix_to_dimarray(A,rangedims,domaindims)
+function MultipliableDimArray(A::AbstractMatrix,rangedims,domaindims)
 
     # extra step for type stability
     Q1 = reshape(A[:,1],size(rangedims))
@@ -113,6 +116,34 @@ end
 function Base.:\(A::AbstractDimMatrix,b::AbstractDimVector)
     DimensionalData.comparedims(first(dims(A)), first(dims(b)); val=true)
     return rebuild(A,parent(A)\parent(b),(last(dims(A)),)) 
+end
+
+function diagonalmatrix(Pdims::Tuple)
+
+    tmp = zeros(Pdims)
+    typetmp = typeof(tmp)
+
+    P = Array{typetmp}(undef,size(tmp))
+
+    for i in eachindex(P)
+        P[i] = zeros(Pdims)
+        P[i][i] += 1.0
+    end
+    return DimArray(P,Pdims)
+end
+
+function DiagonalDimArray(v::AbstractVector,Pdims::Tuple)
+
+    tmp = zeros(Pdims)
+    typetmp = typeof(tmp)
+
+    P = Array{typetmp}(undef,size(tmp))
+
+    for i in eachindex(P)
+        P[i] = zeros(Pdims)
+        P[i][i] += v[i]
+    end
+    return DimArray(P,Pdims)
 end
 
 end

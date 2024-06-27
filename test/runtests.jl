@@ -38,15 +38,14 @@ end
 
     # test that these vectors;matrices can be used in algebraic expressions
     xvec = vec(x)
-    x2 = vector_to_dimarray(xvec, dims(x))
     x3 = MultipliableDimArray(xvec, dims(x))
-    @test x == x2
     @test x == x3
-    
-    yPmat = BLUEs.algebraic_object(y.P)
-    yPda = BLUEs.matrix_to_dimarray(yPmat, dims(y.P), dims(y.P))
-    @test y.P == yPda
 
 
+    v = ones(length(x))
+    Px = DiagonalDimArray(v,dims(x))
+    Pxmat = Matrix(Px)
+    Px2 = MultipliableDimArray(Pxmat, dims(x), dims(x))
+    @test Px == Px2
 
 end
