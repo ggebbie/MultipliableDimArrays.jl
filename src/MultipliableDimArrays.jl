@@ -48,8 +48,7 @@ function MultipliableDimArray(A::AbstractMatrix,rangedims,domaindims)
     return DimArray(P, domaindims)
 end
 
-function MultipliableDimArray(A::AbstractVector,
-                              rdims)
+function MultipliableDimArray(A::AbstractVector, rdims)
     Q1 = reshape(A,size(rdims))
     return DimArray(Q1, rdims)
 end
@@ -66,36 +65,31 @@ function Base.transpose(P::DimArray{T}) where T <: AbstractDimArray
     return MultipliableDimArray( transpose(A), ddims, rdims)
 end
 
-function ldiv(A::DimArray, b::DimArray) 
-    Amat = algebraic_object(A) \ algebraic_object(b)
+function Base.:*(A::DimArray{T1}, b::DimArray{T2}) where T1 <: AbstractDimArray where T2 <: Number
+    Amat = Matrix(A) * vec(b)
     (Amat isa Number) && (Amat = [Amat])
-    ddims = dims(b)
-    rdims = dims(A)
-    return matrix_to_dimarray(Amat, rdims, ddims)
-#    return DimArray(reshape(Amat, size(dims(A))), dims(A))
+    rdims = dims(first(A))
+    return MultipliableDimArray(Amat, rdims)
 end
-function ldiv(A::DimArray{T1}, b::DimArray{T2}) where T1<: AbstractDimArray where T2 <: Number
-    Amat = algebraic_object(A) \ algebraic_object(b)
+function Base.:*(A::DimArray{T}, B::DimArray{T}) where T <: AbstractDimArray
+    Amat = Matrix(A) * Matrix(B)
+    (Amat isa Number) && (Amat = [Amat])
+    ddims = dims(B)
+    rdims = dims(first(A))
+    return MultipliableDimArray(Amat, rdims, ddims)
+end
+
+function Base.:\(A::DimArray{T1}, b::DimArray{T2}) where T1<: AbstractDimArray where T2 <: Number
+    Amat = Matrix(A) \ vec(b)
     (Amat isa Number) && (Amat = [Amat])
     return DimArray(reshape(Amat, size(dims(A))), dims(A))
 end
-
-function matmul(A::DimArray, b::DimArray{T}) where T <: Number
-    Amat = algebraic_object(A) * algebraic_object(b)
+function Base.:\(A::DimArray{T}, B::DimArray{T})  where T <: AbstractDimArray 
+    Amat = Matrix(A) \ Matrix(B)
     (Amat isa Number) && (Amat = [Amat])
-    rdims = dims(first(A))
-    return vector_to_dimarray(Amat, rdims)
-  # return DimArray( reshape(Amat, size(rdims)), rdims)
-end
-function matmul(A::DimArray, b::DimArray)
-    Amat = algebraic_object(A) * algebraic_object(b)
-    (Amat isa Number) && (Amat = [Amat])
-#    rdims = dims(first(A))
- #   return DimArray( reshape(Amat, size(rdims)), rdims)
-    ddims = dims(b)
-    rdims = dims(first(A))
-    return matrix_to_dimarray(Amat, rdims, ddims)
-
+    ddims = dims(B)
+    rdims = dims(A)
+    return MultipliableDimArray(Amat, rdims, ddims)
 end
 
 """

@@ -57,5 +57,15 @@ end
     RxTT = transpose(RxT)
     @test Rx == RxTT
 
+    q = Rx * x
+    x2 = Rx \ q
+    @test isapprox(x, x2, atol = 1e-8)
+
+    Sx = MultipliableDimArray(rand(length(x),length(x)),
+        dims(x), dims(x))    
+    Q = Rx * Sx
+    Sx2 = Rx \ Q 
+    @test isapprox(Sx2, Sx, atol = 1e-8)
+    
 end
 
