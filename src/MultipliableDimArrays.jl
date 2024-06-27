@@ -10,19 +10,6 @@ export DiagonalDimArray
 # an alias
 #MultiDimArray{T} = DimArray{T} where T <: AbstractDimArray
 
-# vec works just as well (maybe an issue when units appear)
-# """
-# function algebraic_object(P::DimArray{Number})
-# """
-# function algebraic_object(P::DimArray{T}) where T <: Number
-#     M = length(P)
-#     A = Vector{T}(undef,M)
-#     for i in eachindex(P)
-#         A[i] = P[i]
-#     end
-#     return A 
-# end
-
 """
 function Matrix(P::DimArray{T}) where T <: AbstractDimArray
 """
@@ -67,11 +54,16 @@ function MultipliableDimArray(A::AbstractVector,
     return DimArray(Q1, rdims)
 end
 
-function algebraic_transpose(P::DimArray)
+function Base.transpose(P::DimArray{T}) where T <: AbstractDimArray
     ddims = dims(P)
     rdims = dims(first(P))
-    A = algebraic_object(P)
-    return matrix_to_dimarray( transpose(A), ddims, rdims)
+    # if T isa Number
+    #     A = vec(P)
+    # elseif T isa AbstractDimArray
+
+    A = Matrix(P)
+    #end
+    return MultipliableDimArray( transpose(A), ddims, rdims)
 end
 
 function ldiv(A::DimArray, b::DimArray) 
@@ -145,5 +137,18 @@ function DiagonalDimArray(v::AbstractVector,Pdims::Tuple)
     end
     return DimArray(P,Pdims)
 end
+
+# vec works just as well (maybe an issue when units appear)
+# """
+# function algebraic_object(P::DimArray{Number})
+# """
+# function algebraic_object(P::DimArray{T}) where T <: Number
+#     M = length(P)
+#     A = Vector{T}(undef,M)
+#     for i in eachindex(P)
+#         A[i] = P[i]
+#     end
+#     return A 
+# end
 
 end

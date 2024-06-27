@@ -41,11 +41,21 @@ end
     x3 = MultipliableDimArray(xvec, dims(x))
     @test x == x3
 
-
     v = ones(length(x))
     Px = DiagonalDimArray(v,dims(x))
     Pxmat = Matrix(Px)
     Px2 = MultipliableDimArray(Pxmat, dims(x), dims(x))
     @test Px == Px2
 
+    PxT = transpose(Px)
+    PxTT = transpose(PxT)
+    @test Px == PxTT
+
+    Rx = MultipliableDimArray(rand(length(x),length(x)),
+        dims(x), dims(x))    
+    RxT = transpose(Rx)
+    RxTT = transpose(RxT)
+    @test Rx == RxTT
+
 end
+
