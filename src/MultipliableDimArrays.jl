@@ -4,8 +4,8 @@ using DimensionalData
 using LinearAlgebra
 
 export MultipliableDimArray
-export matrix_to_dimarray
 export DiagonalDimArray
+export Matrix
 
 # an alias
 #MultiDimArray{T} = DimArray{T} where T <: AbstractDimArray
@@ -13,12 +13,12 @@ export DiagonalDimArray
 """
 function Matrix(P::DimArray{T}) where T <: AbstractDimArray
 """
-function Matrix(P::DimArray{T}) where T <: AbstractDimArray
+function Matrix(P::AbstractDimArray{T}) where T <: AbstractDimArray
     # number of columns/ outer dims
     N = length(P)
     # number of rows, take first inner element as example
     M = length(first(P))
-    A = Matrix{eltype(first(P))}(undef,M,N)
+    A = Array{eltype(first(P))}(undef,M,N)
     if N > 1  
         for j in eachindex(P)
             A[:,j] = P[j][:]
@@ -71,7 +71,7 @@ function Base.:*(A::DimArray{T1}, b::DimArray{T2}) where T1 <: AbstractDimArray 
     rdims = dims(first(A))
     return MultipliableDimArray(Amat, rdims)
 end
-function Base.:*(A::DimArray{T}, B::DimArray{T}) where T <: AbstractDimArray
+function Base.:*(A::DimArray{T1}, B::DimArray{T2}) where T1 <: AbstractDimArray where T2 <: AbstractDimArray
     Amat = Matrix(A) * Matrix(B)
     (Amat isa Number) && (Amat = [Amat])
     ddims = dims(B)
@@ -84,7 +84,7 @@ function Base.:\(A::DimArray{T1}, b::DimArray{T2}) where T1<: AbstractDimArray w
     (Amat isa Number) && (Amat = [Amat])
     return DimArray(reshape(Amat, size(dims(A))), dims(A))
 end
-function Base.:\(A::DimArray{T}, B::DimArray{T})  where T <: AbstractDimArray 
+function Base.:\(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray where T2 <: AbstractDimArray 
     Amat = Matrix(A) \ Matrix(B)
     (Amat isa Number) && (Amat = [Amat])
     ddims = dims(B)
