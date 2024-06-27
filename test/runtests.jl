@@ -43,7 +43,8 @@ end
 
     v = ones(length(x))
     Px = DiagonalDimArray(v,dims(x))
-    Pxmat = Matrix(Px)
+    # try to remove reference 
+    Pxmat = MultipliableDimArrays.Matrix(Px)
     Px2 = MultipliableDimArray(Pxmat, dims(x), dims(x))
     @test Px == Px2
 
