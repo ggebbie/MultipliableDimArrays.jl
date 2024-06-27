@@ -1,5 +1,6 @@
 module MultipliableDimArrays
 
-# Write your package code here.
+using LinearAlgebra
+
 
 end
