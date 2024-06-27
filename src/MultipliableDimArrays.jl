@@ -5,7 +5,7 @@ using LinearAlgebra
 
 export MultipliableDimArray
 export DiagonalDimArray
-export Matrix
+#export Matrix
 
 # an alias
 #MultiDimArray{T} = DimArray{T} where T <: AbstractDimArray
