@@ -2,7 +2,8 @@ module MultipliableDimArrays
 
 using DimensionalData
 using LinearAlgebra
-
+using Unitful
+using UnitfulLinearAlgebra
 export MultipliableDimArray
 export DiagonalDimArray
 #export Matrix
@@ -13,7 +14,7 @@ export DiagonalDimArray
 """
 function Matrix(P::DimArray{T}) where T <: AbstractDimArray
 """
-function Matrix(P::AbstractDimArray{T}) where T <: AbstractDimArray
+function Matrix(P::DimArray{T}) where T <: DimArray
     # number of columns/ outer dims
     N = length(P)
     # number of rows, take first inner element as example
@@ -104,19 +105,19 @@ function Base.:\(A::AbstractDimMatrix,b::AbstractDimVector)
     return rebuild(A,parent(A)\parent(b),(last(dims(A)),)) 
 end
 
-function diagonalmatrix(Pdims::Tuple)
+# function diagonalmatrix(Pdims::Tuple)
 
-    tmp = zeros(Pdims)
-    typetmp = typeof(tmp)
+#     tmp = zeros(Pdims)
+#     typetmp = typeof(tmp)
 
-    P = Array{typetmp}(undef,size(tmp))
+#     P = Array{typetmp}(undef,size(tmp))
 
-    for i in eachindex(P)
-        P[i] = zeros(Pdims)
-        P[i][i] += 1.0
-    end
-    return DimArray(P,Pdims)
-end
+#     for i in eachindex(P)
+#         P[i] = zeros(Pdims)
+#         P[i][i] += 1.0
+#     end
+#     return DimArray(P,Pdims)
+# end
 
 function DiagonalDimArray(v::AbstractVector,Pdims::Tuple)
 
@@ -144,5 +145,7 @@ end
 #     end
 #     return A 
 # end
+
+include("unitful_linear_algebra.jl")
 
 end
