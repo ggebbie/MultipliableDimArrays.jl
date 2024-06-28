@@ -123,4 +123,10 @@ end
 
         Ialmost = iPx * Px # matrix-matrix multiplication, except iPx is not actually the inverse of Px
         MultipliableDimArrays.Matrix(Ialmost)  # visually reasonable
+
+        # does matrix-matrix left divide work?
+        Px2 = iPx \ Ialmost
+        @test isapprox(Px[2][3], ustrip(Px2[2][3]), atol = 1e-8) # weak test, but function to revert operation is not completed, one is DimArr    
+        @test isapprox(Px, Px2, atol = 1e-8) # weak test, but function to revert operation is not comend
+    end
 end
