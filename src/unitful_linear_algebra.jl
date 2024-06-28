@@ -49,28 +49,41 @@ function Base.transpose(P::UnitfulLinearAlgebra.UnitfulMatrix{T}) where T <: Dim
     return MultipliableDimArray(transpose(P2), ddims, rdims)
 end
 
-function Base.:*(A::UnitfulMatrix{T1}, b::DimArray{T2}) where T1 <: DimArray where T2 <: Number
-
+function lower_unitful_matrix(A::UnitfulMatrix{T1}) where T1 <: DimArray
     # make a lowered UnitfulMatrix version
     # lowered = drops label Dimensions
     parent_lower = MultipliableDimArrays.Matrix(parent(A))
     range_lower = vec(unitrange(A))
     domain_lower = vec(unitdomain(A))
     exact_lower = exact(A)
-    Alower = UnitfulMatrix(parent_lower,
+    return UnitfulMatrix(parent_lower,
         range_lower,domain_lower,exact=exact_lower)
-    
+end
+
+function Base.:*(A::UnitfulMatrix{T1}, b::DimArray{T2}) where T1 <: DimArray where T2 <: Number
+    # make a lowered UnitfulMatrix version
+    # lowered = drops label Dimensions
+    Alower = lower_unitful_matrix(A)
     Amat = Alower * vec(b)
     (Amat isa Number) && (Amat = [Amat])
     rdims = dims(first(parent(A)))
     return MultipliableDimArray(Amat, rdims)
 end
-# function Base.:*(A::DimArray{T1}, B::DimArray{T2}) where T1 <: AbstractDimArray where T2 <: AbstractDimArray
-#     Amat = Matrix(A) * Matrix(B)
-#     (Amat isa Number) && (Amat = [Amat])
-#     ddims = dims(B)
-#     rdims = dims(first(A))
-#     return MultipliableDimArray(Amat, rdims, ddims)
-# end
+function Base.:*(A::UnitfulMatrix{T1}, B::UnitfulMatrix{T2}) where T1 <: DimArray where T2 <: DimArray
+    # warning: untested function
+    # lowered = drops label Dimensions
+    Alower = lower_unitful_matrix(A)
+    Blower = lower_unitful_matrix(B)
+    Amat = Alower * Blower
+    (Amat isa Number) && (Amat = [Amat])
+    ddims = dims(parent(B))
+    rdims = dims(first(parent(A)))
+    D = MultipliableDimArray(Amat, rdims, ddims)
+
+    # raise it to UnitfulMatrix by re-inserting label Dimensions
+    dlabeldims = unitdomain(B) #dims(B)
+    rlabeldims = unitrange(A) #dims(first(A))
+    return UnitfulMatrix(D,(rlabeldims,dlabeldims))
+end
 
 Base.show(io::IO, mime::MIME"text/plain", A::UnitfulLinearAlgebra.UnitfulMatrix{T}) where T <: DimArray = Base.show(io::IO, mime::MIME"text/plain", matrix_fancy_print(A)) 
