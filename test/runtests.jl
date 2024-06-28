@@ -71,6 +71,7 @@ end
         Sx2 = Rx \ Q 
         @test isapprox(Sx2, Sx, atol = 1e-8)
     end
+
     @testset "UnitfulLinearAlgebra extension" begin
 
         using Unitful
@@ -107,7 +108,16 @@ end
         Px2 = MultipliableDimArray(Pxmat, dims(x), dims(x))
         @test Px[2][3] == ustrip(Px2[2][3]) # weak test, but function to revert operation is not completed, one is DimArray, one is UnitfulMatrix
 
-    end
+        PxT = transpose(Px)
+        PxTT = transpose(PxT)
+#        @test Px == PxTT
+        @test Px[2][3] == ustrip(PxTT[2][3]) # weak test, but function to revert operation is not completed, one is DimArr    
+        # make quick inverse of Px for unit compatibility
+        iPx = UnitfulMatrix(D,(udomain,urange))
+
+        q = iPx * x
+        x2 = iPx \ q
+        @test isapprox(x, x2, atol = 1e-8)
+
+        
 end
-
-
