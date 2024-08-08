@@ -6,7 +6,9 @@ using Unitful
 using UnitfulLinearAlgebra
 export MultipliableDimArray
 export DiagonalDimArray
-#export Matrix
+export Matrix
+
+import Base: Matrix
 
 # an alias
 #MultiDimArray{T} = DimArray{T} where T <: AbstractDimArray
@@ -105,29 +107,15 @@ function Base.:\(A::AbstractDimMatrix,b::AbstractDimVector)
     return rebuild(A,parent(A)\parent(b),(last(dims(A)),)) 
 end
 
-# function diagonalmatrix(Pdims::Tuple)
+function DiagonalDimArray(v::AbstractVector{T},Pdims::Tuple) where T
 
-#     tmp = zeros(Pdims)
-#     typetmp = typeof(tmp)
-
-#     P = Array{typetmp}(undef,size(tmp))
-
-#     for i in eachindex(P)
-#         P[i] = zeros(Pdims)
-#         P[i][i] += 1.0
-#     end
-#     return DimArray(P,Pdims)
-# end
-
-function DiagonalDimArray(v::AbstractVector,Pdims::Tuple)
-
-    tmp = zeros(Pdims)
+    tmp = zeros(T,Pdims)
     typetmp = typeof(tmp)
 
     P = Array{typetmp}(undef,size(tmp))
 
     for i in eachindex(P)
-        P[i] = zeros(Pdims)
+        P[i] = zeros(T, Pdims)
         P[i][i] += v[i]
     end
     return DimArray(P,Pdims)
