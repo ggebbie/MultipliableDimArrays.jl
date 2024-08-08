@@ -1,7 +1,7 @@
 name = "MultipliableDimArrays"
 uuid = "3e2a59ee-8dc2-49ed-b08b-35477f91d0a4"
 authors = ["G Jake Gebbie <ggebbie@whoi.edu>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
