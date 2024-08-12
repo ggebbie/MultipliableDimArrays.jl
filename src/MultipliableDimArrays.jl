@@ -121,6 +121,16 @@ function DiagonalDimArray(v::AbstractVector{T},Pdims::Tuple) where T
     return DimArray(P,Pdims)
 end
 
+# reverse the order of DiagonalDimArray
+function LinearAlgebra.diag(P::DimArray{T}) where T <: DimArray{T2} where T2 <: Number
+
+    d = zeros(T2,length(P))
+    for i in eachindex(P)
+        d[i] = P[i][i]
+    end
+    return d
+end
+
 # vec works just as well (maybe an issue when units appear)
 # """
 # function algebraic_object(P::DimArray{Number})
