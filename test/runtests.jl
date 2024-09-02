@@ -70,6 +70,10 @@ end
         Q = Rx * Sx
         Sx2 = Rx \ Q 
         @test isapprox(Sx2, Sx, atol = 1e-8)
+
+        # square matrices, matrix matrix right divide
+        @test isapprox(Q / Sx, Rx, atol = 1e-8)
+        
     end
 
     @testset "UnitfulLinearAlgebra extension" begin
