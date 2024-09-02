@@ -82,12 +82,12 @@ function Base.:*(A::DimArray{T1}, B::DimArray{T2}) where T1 <: AbstractDimArray 
     return MultipliableDimArray(Amat, rdims, ddims)
 end
 
-function Base.:\(A::DimArray{T1}, b::DimArray{T2}) where T1<: AbstractDimArray where T2 <: Number
+function Base.:(\)(A::DimArray{T1}, b::DimArray{T2}) where T1<: AbstractDimArray where T2 <: Number
     Amat = Matrix(A) \ vec(b)
     (Amat isa Number) && (Amat = [Amat])
     return DimArray(reshape(Amat, size(dims(A))), dims(A))
 end
-function Base.:\(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray where T2 <: AbstractDimArray 
+function Base.:(\)(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray where T2 <: AbstractDimArray 
     Amat = Matrix(A) \ Matrix(B)
     (Amat isa Number) && (Amat = [Amat])
     ddims = dims(B)
@@ -106,6 +106,20 @@ function Base.:\(A::AbstractDimMatrix,b::AbstractDimVector)
     DimensionalData.comparedims(first(dims(A)), first(dims(b)); val=true)
     return rebuild(A,parent(A)\parent(b),(last(dims(A)),)) 
 end
+
+"""
+function matrix right divide
+
+`A/B = ( B'\\A')'
+"""
+function Base.:/(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray where T2 <: AbstractDimArray 
+    Amat = Matrix(A) / Matrix(B)
+    (Amat isa Number) && (Amat = [Amat])
+    ddims = dims(B)
+    rdims = dims(A)
+    return MultipliableDimArray(Amat, rdims, ddims)
+end
+
 
 function DiagonalDimArray(v::AbstractVector{T},Pdims::Tuple) where T
 
