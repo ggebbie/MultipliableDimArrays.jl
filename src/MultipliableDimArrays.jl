@@ -59,13 +59,15 @@ end
 function Base.transpose(P::DimArray{T}) where T <: AbstractDimArray
     ddims = dims(P)
     rdims = dims(first(P))
-    # if T isa Number
-    #     A = vec(P)
-    # elseif T isa AbstractDimArray
-
     A = Matrix(P)
-    #end
     return MultipliableDimArray( transpose(A), ddims, rdims)
+end
+
+function Base.adjoint(P::DimArray{T}) where T <: AbstractDimArray
+    ddims = dims(P)
+    rdims = dims(first(P))
+    A = Matrix(P)
+    return MultipliableDimArray( adjoint(A), ddims, rdims)
 end
 
 function Base.:*(A::DimArray{T1}, b::DimArray{T2}) where T1 <: AbstractDimArray where T2 <: Number
