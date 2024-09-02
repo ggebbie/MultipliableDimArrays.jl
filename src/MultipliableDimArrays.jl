@@ -4,11 +4,15 @@ using DimensionalData
 using LinearAlgebra
 using Unitful
 using UnitfulLinearAlgebra
+
 export MultipliableDimArray
 export DiagonalDimArray
 export Matrix
+export uniform
+export \, /
 
 import Base: Matrix
+import Base: \, /
 
 # an alias
 #MultiDimArray{T} = DimArray{T} where T <: AbstractDimArray
@@ -59,13 +63,15 @@ end
 function Base.transpose(P::DimArray{T}) where T <: AbstractDimArray
     ddims = dims(P)
     rdims = dims(first(P))
-    # if T isa Number
-    #     A = vec(P)
-    # elseif T isa AbstractDimArray
-
     A = Matrix(P)
-    #end
     return MultipliableDimArray( transpose(A), ddims, rdims)
+end
+
+function Base.adjoint(P::DimArray{T}) where T <: AbstractDimArray
+    ddims = dims(P)
+    rdims = dims(first(P))
+    A = Matrix(P)
+    return MultipliableDimArray( adjoint(A), ddims, rdims)
 end
 
 function Base.:*(A::DimArray{T1}, b::DimArray{T2}) where T1 <: AbstractDimArray where T2 <: Number
@@ -94,6 +100,15 @@ function Base.:(\)(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArr
     rdims = dims(A)
     return MultipliableDimArray(Amat, rdims, ddims)
 end
+# Unitful doesn't handle complex quantities
+function Base.:(\)(A::Matrix{T}, B::Matrix{T2}) where T <: Complex where T2 <: Quantity
+    if uniform(B)
+        Bunit = unit(first(B))
+        return (1/Bunit) .* (A \ ustrip.(B))
+    else
+        error("matrix right divide not handled for non-uniform matrices")
+    end
+end
 
 """
      function left divide
@@ -102,7 +117,7 @@ end
      Reverse mapping from unitdomain to range.
      Is `exact` if input is exact.
 """
-function Base.:\(A::AbstractDimMatrix,b::AbstractDimVector)
+function Base.:(\)(A::AbstractDimMatrix,b::AbstractDimVector)
     DimensionalData.comparedims(first(dims(A)), first(dims(b)); val=true)
     return rebuild(A,parent(A)\parent(b),(last(dims(A)),)) 
 end
@@ -112,7 +127,7 @@ function matrix right divide
 
 `A/B = ( B'\\A')'
 """
-function Base.:/(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray where T2 <: AbstractDimArray 
+function Base.:(/)(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray where T2 <: AbstractDimArray 
     Amat = Matrix(A) / Matrix(B)
     (Amat isa Number) && (Amat = [Amat])
     ddims = dims(B)
@@ -120,6 +135,31 @@ function Base.:/(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray
     return MultipliableDimArray(Amat, rdims, ddims)
 end
 
+# Unitful doesn't handle complex quantities
+function Base.:(/)(A::Matrix{T}, B::Matrix{T2}) where T <: Quantity where T2 <: Complex
+    if uniform(A)
+        Aunit = unit(first(A))
+        return Aunit.* (ustrip.(A) / B)
+    else
+        error("matrix right divide not handled for non-uniform matrices")
+    end
+end
+function Base.:(/)(A::Matrix{T2}, B::Matrix{T}) where T <: Quantity where T2 <: Complex
+    if uniform(B)
+        Bunit = unit(first(B))
+        return (1/Bunit) .* (A / ustrip.(B)) # needs to be tested for proper units
+    else
+        error("matrix right divide not handled for non-uniform matrices")
+    end
+end
+
+# eigenstructure only exists if A is uniform
+# should be a better way by reading type
+uniform(A::DimArray{<:DimArray}) = uniform(Matrix(A))
+function uniform(A::Matrix)
+    ulist = unit.(A)
+    return allequal(ulist)
+end
 
 function DiagonalDimArray(v::AbstractVector{T},Pdims::Tuple) where T
 
