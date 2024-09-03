@@ -76,6 +76,20 @@ end
         
     end
 
+    @testset "eigenstructure" begin 
+        x = source_water_solution(surfaceregions,
+            years,
+            statevariables)
+
+        Sx = MultipliableDimArray(rand(length(x),length(x)),
+            dims(x), dims(x))    
+
+        D, V = eigen(Sx)
+
+        Sx_eigen = V * D / V
+        @test isapprox(Sx, Sx_eigen, atol = 1e-8)
+    end
+
     @testset "UnitfulLinearAlgebra extension" begin
 
         using Unitful

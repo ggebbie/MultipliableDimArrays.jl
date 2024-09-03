@@ -1,6 +1,7 @@
 module MultipliableDimArrays
 
 using DimensionalData
+using DimensionalData: @dim
 using LinearAlgebra
 using Unitful
 using UnitfulLinearAlgebra
@@ -10,12 +11,15 @@ export DiagonalDimArray
 export Matrix
 export uniform
 export \, /
+export eigen 
 
 import Base: Matrix
 import Base: \, /
+import LinearAlgebra: eigen 
 
 # an alias
 #MultiDimArray{T} = DimArray{T} where T <: AbstractDimArray
+@dim Eigenmode "eigenmode"
 
 """
 function Matrix(P::DimArray{T}) where T <: AbstractDimArray
@@ -130,8 +134,8 @@ function matrix right divide
 function Base.:(/)(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray where T2 <: AbstractDimArray 
     Amat = Matrix(A) / Matrix(B)
     (Amat isa Number) && (Amat = [Amat])
-    ddims = dims(B)
-    rdims = dims(A)
+    ddims = dims(first(B))
+    rdims = dims(first(A))
     return MultipliableDimArray(Amat, rdims, ddims)
 end
 
@@ -161,6 +165,8 @@ function uniform(A::Matrix)
     return allequal(ulist)
 end
 
+allequal(x) = all(y -> y == first(x), x)
+
 function DiagonalDimArray(v::AbstractVector{T},Pdims::Tuple) where T
 
     tmp = zeros(T,Pdims)
@@ -183,6 +189,26 @@ function LinearAlgebra.diag(P::DimArray{T}) where T <: DimArray{T2} where T2 <: 
         d[i] = P[i][i]
     end
     return d
+end
+
+function LinearAlgebra.eigen(A::DimArray{<:DimArray})
+
+    uniform(A) ? uA = unit(first(first(A))) : error("No eigendecomposition for a non-uniform matrix")
+    A_matrix = MultipliableDimArrays.Matrix(A)
+    F = eigen(ustrip.(A_matrix))
+
+    eigen_dims = Eigenmode(1:size(A_matrix,2))
+    model_dims = dims(A)
+
+    values = MultipliableDimArray(uA * F.values, eigen_dims)
+    μ = DiagonalDimArray(values, dims(values))
+
+    vectors = MultipliableDimArray(F.vectors,
+            model_dims, eigen_dims)    
+
+    return μ, vectors
+    # ideally, would return an Eigen factorization, in spirit like:
+    #    return Eigen(QuantityArray(F.values, dimension(A)), F.vectors)
 end
 
 include("unitful_linear_algebra.jl")
