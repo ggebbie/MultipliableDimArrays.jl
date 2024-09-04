@@ -11,10 +11,12 @@ export DiagonalDimArray
 export Matrix
 export uniform
 export \, /
-export eigen 
+export eigen
+export exp
 
 import Base: Matrix
 import Base: \, /
+import Base: exp 
 import LinearAlgebra: eigen 
 
 # an alias
@@ -64,6 +66,9 @@ function MultipliableDimArray(A::AbstractVector, rdims)
     return DimArray(Q1, rdims)
 end
 
+# Note: there is no equivalent function for Multipliable Vectors,
+# because it would conflict with default functions in DimensionalData.jl.
+# Use a Matrix to represent a Vector if this functionality is desired.
 function Base.transpose(P::DimArray{T}) where T <: AbstractDimArray
     ddims = dims(P)
     rdims = dims(first(P))
@@ -209,6 +214,15 @@ function LinearAlgebra.eigen(A::DimArray{<:DimArray})
     return μ, vectors
     # ideally, would return an Eigen factorization, in spirit like:
     #    return Eigen(QuantityArray(F.values, dimension(A)), F.vectors)
+end
+
+endomorphic(A::DimArray{T}) where T<: AbstractDimArray = isequal(dims(A), dims(first(A)))
+
+function exp(A::DimArray{T}) where T<: AbstractDimArray
+    # A must be endomorphic (check type signature someday)
+    !endomorphic(A) && error("A must be endomorphic to be consistent with matrix exponential")
+    eA = exp(Matrix(A)) # move upstream to MultipliableDimArrays eventually
+    return MultipliableDimArray(eA,dims(A),dims(A)) # wrap with same labels and format as A
 end
 
 include("unitful_linear_algebra.jl")
