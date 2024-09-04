@@ -88,6 +88,10 @@ end
 
         Sx_eigen = V * D / V
         @test isapprox(Sx, Sx_eigen, atol = 1e-8)
+
+        # check matrix exponential
+        @test MultipliableDimArrays.endomorphic(Sx)
+        exp(Sx) # watch out for overflow!
     end
 
     @testset "UnitfulLinearAlgebra extension" begin
