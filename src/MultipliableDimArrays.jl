@@ -102,6 +102,7 @@ function Base.:(\)(A::DimArray{T1}, b::DimArray{T2}) where T1<: AbstractDimArray
     (Amat isa Number) && (Amat = [Amat])
     return DimArray(reshape(Amat, size(dims(A))), dims(A))
 end
+
 function Base.:(\)(A::DimArray{T1}, B::DimArray{T2})  where T1 <: AbstractDimArray where T2 <: AbstractDimArray 
     Amat = Matrix(A) \ Matrix(B)
     (Amat isa Number) && (Amat = [Amat])
@@ -115,7 +116,17 @@ function Base.:(\)(A::Matrix{T}, B::Matrix{T2}) where T <: Complex where T2 <: Q
         Bunit = unit(first(B))
         return (1/Bunit) .* (A \ ustrip.(B))
     else
-        error("matrix right divide not handled for non-uniform matrices")
+        error("matrix left divide not handled for non-uniform matrices")
+    end
+end
+
+# Unitful doesn't handle matrix left divide between Quantity and non-Quantity
+function Base.:(\)(A::Matrix{T}, b::Vector{T2}) where T <: Quantity where T2 <: Number
+    if uniform(A)
+        Aunit = unit(first(A))
+        return (1/Aunit) .* (ustrip.(A) \ b)
+    else
+        error("matrix left divide not handled for non-uniform matrices")
     end
 end
 
